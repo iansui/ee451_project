@@ -2,23 +2,33 @@
 #include <string>
 #include <vector>
 
+class Edge{
+    public:
+        Edge(int Source, int Target, float Weight):source(Source), target(Target), weight(Weight){}
+        int source;
+        int target;
+        float weight;
+};
+
 // parse a line of a csv file and return a vector of strings
-std::vector<std::string> CSV_parse(const std::string& str)
+Edge parse_edge(const std::string& str)
 {
-    // set the divider
-	const char delim = ',';
-	std::vector<std::string> return_vec;
+    const char delim = ',';
+	std::vector<std::string> retVal;
 	
 	size_t start = 0;
 	size_t delimLoc = str.find_first_of(delim, start);
 	while (delimLoc != std::string::npos)
 	{
-		return_vec.emplace_back(str.substr(start, delimLoc - start));
+		retVal.emplace_back(str.substr(start, delimLoc - start));
 		
 		start = delimLoc + 1;
 		delimLoc = str.find_first_of(delim, start);
 	}
 	
-	return_vec.emplace_back(str.substr(start));
-	return return_vec;
+	retVal.emplace_back(str.substr(start));
+    int source = std::stoi(retVal[0]);
+    int target = std::stoi(retVal[1]);
+    float weight = std::stof(retVal[2]);
+	return Edge(source, target, weight);
 }
