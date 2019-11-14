@@ -1,39 +1,49 @@
+#include "readfile.h"
+#include "helpers.h"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include "helpers.h"
-typedef int Node;
-using namespace std;
 
-vector<unordered_map<Node, float> >& readfile(){
-	int node_num = 6005;
-	ifstream file("dataset/dataset.csv");
-	string line = "";
+const int NODE_NUM = 6005;
+const std::string FILE_NAME = "dataset/dataset.csv";
+
+std::unordered_set<Node> empty_set;
+std::vector<std::unordered_map<Node, float> > node_vec;
+
+std::vector<std::unordered_map<Node, float>>& readfile(){
+	node_vec = std::vector<std::unordered_map<Node, float>>(NODE_NUM);
+	std::ifstream file(FILE_NAME);
+
+	std::string line = "";
+	std::unordered_set<Node> exist_set;
 	
-	vector<unordered_map<Node, float> > node_vec(node_num);
 	if(file.fail()){
-		cout<<"Error opening file"<<endl;
+		std::cout<<"Error opening file"<<std::endl;
 	}
 	while(getline(file, line)){
 		Edge edge = parse_edge(line);
 		int source = edge.source;
+		exist_set.insert(source);
 		int target = edge.target;
+		exist_set.insert(target);
 		float weight = edge.weight;
-		
 		node_vec[source][target] = weight;
 	}
 
 	file.close();
+
+	// calculate empty set
+	for(int i = 1; i <= NODE_NUM; ++i){
+		auto it = exist_set.find(i);
+		if (it == exist_set.end()){
+			empty_set.insert(i);
+		}
+	}
 	return node_vec;
 }
 
-int get_node_number() {
-	return 6005;
-}
-
 std::unordered_set<Node>& get_empty_nodes() {
-	return ;
+	return empty_set;
 }
