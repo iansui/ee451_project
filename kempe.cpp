@@ -1,9 +1,40 @@
 
 #include <unordered_set>
+#include <queue>
+#include <unordered_map>
+
 typedef int Node;
 
+// Return a random number in [0, 1]
+int getRamdomNumber() {
+    return 1;
+}
+
 int infect(std::unordered_set<Node>& seed) {
-    return ;
+    
+    std::unordered_set<Node> infected = seed;
+    std::vector<std::unordered_map<Node, float> > graph;
+
+    std::queue<Node> infecting_nodes;
+
+    for(auto it = infected.begin(); it != infected.end(); ++it) {
+        infecting_nodes.push(*it);
+    }
+
+    while(!infecting_nodes.empty()) {
+        Node current_infecting_node = infecting_nodes.front();
+        infecting_nodes.pop();
+        std::unordered_map<Node, float>& edges = graph[current_infecting_node];
+        for(auto it = edges.begin(); it != edges.end(); ++it) {
+            // The head of the edge is not infected and activation succeeds
+            if(infected.find(it->first) == infected.end() && getRamdomNumber() > it->second) {
+                infected.insert(it->first);
+                infecting_nodes.push(it->first);
+            }
+        }
+    }
+
+    return infected.size();
 }
 
 float sample(std::unordered_set<Node>& seed, int times) {
@@ -21,14 +52,14 @@ float sample(std::unordered_set<Node>& seed, int times) {
 /**
  * 
  */
-Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node max_node) {
+Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node min_node, Node max_node) {
 
-    int sample_times = 0; // To be determined
+    int sample_times = 100; // To be determined
 
     float max_influence = 0;
     Node maximized_node = -1;
     // for each node not in the seed set nor in the empty set
-    for(Node candidate = 0; candidate <= max_node; candidate++) {
+    for(Node candidate = min_node; candidate <= max_node; candidate++) {
         if(empty_nodes.find(candidate) == empty_nodes.end && seed.find(candidate) == seed.end) {
             seed.insert(candidate);
             // Simulate activation for multiple times
@@ -40,7 +71,10 @@ Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Nod
             }
             else if(influence == max_influence) {
                 // Arbitrary tie break
-
+                if(getRamdomNumber() > 0.5) {
+                    max_influence = influence;
+                    maximized_node = candidate;
+                }
             }
             seed.erase(candidate);
         }
@@ -50,11 +84,14 @@ Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Nod
     return maximized_node;
 }
 
-std::unordered_set<Node>& greedy_maximize_influence(int size) {
+std::unordered_set<Node>& greedy_maximize_influence(
+    std::vector<std::unordered_map<Node, float> >& graph,
+    int size) {
     std::unordered_set<Node> seed;
-    while(seed.size < size) {
+    while(seed.size() < size) {
         Node node_with_max_influence = select_maximize_node(seed, empty_nodes, max_node);
         seed.insert(node_with_max_influence);
     }
     return seed;
 }
+

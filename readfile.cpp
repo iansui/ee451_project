@@ -3,13 +3,14 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include "helpers.h"
 typedef int Node;
 using namespace std;
 
-vector readfile(){
+vector<unordered_map<Node, float> >& readfile(){
 	int node_num = 6005;
-	ifstream file("dataset.csv");
+	ifstream file("dataset/dataset.csv");
 	string line = "";
 	
 	vector<unordered_map<Node, float> > node_vec(node_num);
@@ -27,4 +28,12 @@ vector readfile(){
 
 	file.close();
 	return node_vec;
+}
+
+int get_node_number() {
+	return 6005;
+}
+
+std::unordered_set<Node>& get_empty_nodes() {
+	return ;
 }
