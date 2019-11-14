@@ -86,10 +86,13 @@ Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Nod
 
 std::unordered_set<Node>& greedy_maximize_influence(
     std::vector<std::unordered_map<Node, float> >& graph,
+    std::unordered_set<Node>& empty_nodes,
+    Node max_node,
     int size) {
+    Node min_node = 1;
     std::unordered_set<Node> seed;
     while(seed.size() < size) {
-        Node node_with_max_influence = select_maximize_node(seed, empty_nodes, max_node);
+        Node node_with_max_influence = select_maximize_node(seed, empty_nodes, min_node, max_node);
         seed.insert(node_with_max_influence);
     }
     return seed;
