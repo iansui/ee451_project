@@ -27,7 +27,7 @@ int infect(std::unordered_set<Node>& seed) {
         std::unordered_map<Node, float>& edges = graph[current_infecting_node];
         for(auto it = edges.begin(); it != edges.end(); ++it) {
             // The head of the edge is not infected and activation succeeds
-            if(infected.find(it->first) == infected.end() && getRamdomNumber() > it->second) {
+            if(infected.find(it->first) == infected.end() && getRamdomNumber() >= it->second) {
                 infected.insert(it->first);
                 infecting_nodes.push(it->first);
             }
@@ -60,7 +60,7 @@ Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Nod
     Node maximized_node = -1;
     // for each node not in the seed set nor in the empty set
     for(Node candidate = min_node; candidate <= max_node; candidate++) {
-        if(empty_nodes.find(candidate) == empty_nodes.end && seed.find(candidate) == seed.end) {
+        if(empty_nodes.find(candidate) == empty_nodes.end() && seed.find(candidate) == seed.end()) {
             seed.insert(candidate);
             // Simulate activation for multiple times
             float influence = sample(seed, sample_times);
