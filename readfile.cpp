@@ -6,8 +6,7 @@
 #include <vector>
 #include <string>
 
-const int NODE_NUM = 6005;
-const std::string FILE_NAME = "dataset/dataset.csv";
+
 
 std::unordered_set<Node> empty_set;
 std::vector<std::unordered_map<Node, float> > node_vec;
