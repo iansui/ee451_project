@@ -8,8 +8,8 @@
 typedef int Node;
 
 
-const int NODE_NUM = 6005; // 15, 13
-const std::string FILE_NAME = "dataset/dataset.csv"; 
+const int NODE_NUM = 15; // 15, 13
+const std::string FILE_NAME = "dataset/testset1.csv"; 
 // Test1: testset1.csv
 // Test2: testset2.csv
 

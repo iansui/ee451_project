@@ -1,4 +1,4 @@
 all: kempe
 
 kempe:
-	g++ -o kempe main.cpp kempe.cpp readfile.cpp
+	g++ -std=c++11 -o kempe main.cpp kempe.cpp readfile.cpp

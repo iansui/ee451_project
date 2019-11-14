@@ -1,6 +1,7 @@
 
 #include "kempe.h"
 #include <queue>
+#include <iostream>
 
 // Return a random number in [0, 1]
 int getRamdomNumber() {
@@ -8,7 +9,11 @@ int getRamdomNumber() {
 }
 
 int infect(std::unordered_set<Node>& seed) {
-    
+    std::cout << "Seed:" << std::endl;
+    for(auto it = seed.begin(); it != seed.end(); ++it) {
+        std::cout << *it << std::endl;
+    }
+
     std::unordered_set<Node> infected = seed;
     std::vector<std::unordered_map<Node, float> > graph;
 
@@ -21,14 +26,20 @@ int infect(std::unordered_set<Node>& seed) {
     while(!infecting_nodes.empty()) {
         Node current_infecting_node = infecting_nodes.front();
         infecting_nodes.pop();
+        std::cout << current_infecting_node << std::endl;
         std::unordered_map<Node, float>& edges = graph[current_infecting_node];
         for(auto it = edges.begin(); it != edges.end(); ++it) {
+            std::cout << "Here!" << std::endl;
             // The head of the edge is not infected and activation succeeds
             if(infected.find(it->first) == infected.end() && getRamdomNumber() >= it->second) {
                 infected.insert(it->first);
                 infecting_nodes.push(it->first);
             }
         }
+    }
+
+    for(auto it : infected) {
+        std::cout << it << std::endl;
     }
 
     return infected.size();
