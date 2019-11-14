@@ -1,9 +1,6 @@
 
-#include <unordered_set>
+#include "kempe.h"
 #include <queue>
-#include <unordered_map>
-
-typedef int Node;
 
 // Return a random number in [0, 1]
 int getRamdomNumber() {
@@ -84,7 +81,7 @@ Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Nod
     return maximized_node;
 }
 
-std::unordered_set<Node>& greedy_maximize_influence(
+std::unordered_set<Node> greedy_maximize_influence(
     std::vector<std::unordered_map<Node, float> >& graph,
     std::unordered_set<Node>& empty_nodes,
     Node max_node,
