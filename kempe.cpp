@@ -8,14 +8,12 @@ int getRamdomNumber() {
     return 1;
 }
 
-int infect(std::unordered_set<Node>& seed) {
-    std::cout << "Seed:" << std::endl;
-    for(auto it = seed.begin(); it != seed.end(); ++it) {
-        std::cout << *it << std::endl;
-    }
+int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_set<Node>& seed) {
+
+
 
     std::unordered_set<Node> infected = seed;
-    std::vector<std::unordered_map<Node, float> > graph;
+
 
     std::queue<Node> infecting_nodes;
 
@@ -23,13 +21,15 @@ int infect(std::unordered_set<Node>& seed) {
         infecting_nodes.push(*it);
     }
 
+    
+
     while(!infecting_nodes.empty()) {
         Node current_infecting_node = infecting_nodes.front();
         infecting_nodes.pop();
-        std::cout << current_infecting_node << std::endl;
+        //std::cout << current_infecting_node << std::endl;
         std::unordered_map<Node, float>& edges = graph[current_infecting_node];
         for(auto it = edges.begin(); it != edges.end(); ++it) {
-            std::cout << "Here!" << std::endl;
+            //std::cout << "Here!" << std::endl;
             // The head of the edge is not infected and activation succeeds
             if(infected.find(it->first) == infected.end() && getRamdomNumber() >= it->second) {
                 infected.insert(it->first);
@@ -38,18 +38,25 @@ int infect(std::unordered_set<Node>& seed) {
         }
     }
 
-    for(auto it : infected) {
-        std::cout << it << std::endl;
+    if(seed.size() == 1) {
+        std::cout << "Seed:" << std::endl;
+        for(auto it = seed.begin(); it != seed.end(); ++it) {
+            std::cout << *it << std::endl;
+        } 
+        std::cout << "Infected:" << std::endl;
+        for(auto it : infected) {
+            std::cout << it << " ";
+        }
+        std::cout << std::endl << std::endl;
     }
-
     return infected.size();
 }
 
-float sample(std::unordered_set<Node>& seed, int times) {
+float sample(std::vector<std::unordered_map<Node, float> > graph, std::unordered_set<Node>& seed, int times) {
     // Simulate
     int influence = 0;
     for(int iterate_time = 0; iterate_time < times; iterate_time++) {
-        influence += infect(seed);
+        influence += infect(graph, seed);
     }
 
 
@@ -60,9 +67,9 @@ float sample(std::unordered_set<Node>& seed, int times) {
 /**
  * 
  */
-Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node min_node, Node max_node) {
+Node select_maximize_node(std::vector<std::unordered_map<Node, float> > graph, std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node min_node, Node max_node) {
 
-    int sample_times = 100; // To be determined
+    int sample_times = 1; // To be determined
 
     float max_influence = 0;
     Node maximized_node = -1;
@@ -71,7 +78,7 @@ Node select_maximize_node(std::unordered_set<Node>& seed, std::unordered_set<Nod
         if(empty_nodes.find(candidate) == empty_nodes.end() && seed.find(candidate) == seed.end()) {
             seed.insert(candidate);
             // Simulate activation for multiple times
-            float influence = sample(seed, sample_times);
+            float influence = sample(graph, seed, sample_times);
             // Update if influcence is larger
             if(influence > max_influence) {
                 max_influence = influence;
@@ -100,7 +107,7 @@ std::unordered_set<Node> greedy_maximize_influence(
     Node min_node = 1;
     std::unordered_set<Node> seed;
     while(seed.size() < size) {
-        Node node_with_max_influence = select_maximize_node(seed, empty_nodes, min_node, max_node);
+        Node node_with_max_influence = select_maximize_node(graph, seed, empty_nodes, min_node, max_node);
         seed.insert(node_with_max_influence);
     }
     return seed;

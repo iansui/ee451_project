@@ -12,7 +12,7 @@ std::unordered_set<Node> empty_set;
 std::vector<std::unordered_map<Node, float> > node_vec;
 
 std::vector<std::unordered_map<Node, float>>& readfile(){
-	node_vec = std::vector<std::unordered_map<Node, float>>(NODE_NUM);
+	node_vec = std::vector<std::unordered_map<Node, float>>(NODE_NUM + 1);
 	std::ifstream file(FILE_NAME);
 
 	std::string line = "";
