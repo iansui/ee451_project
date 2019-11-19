@@ -1,4 +1,4 @@
-all: kempe
+all: serial
 
-kempe:
-	g++ -std=c++11 -o kempe main.cpp kempe.cpp readfile.cpp
+serial:
+	g++ -std=c++11 -o serial serial.cpp kempe.cpp readfile.cpp
