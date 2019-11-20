@@ -1,4 +1,7 @@
-all: kempe
+all: serial mpi-static
 
-kempe:
-	g++ -std=c++11 -o kempe main.cpp kempe.cpp readfile.cpp
+serial:
+	g++ -std=c++11 -o serial serial.cpp kempe.cpp readfile.cpp
+	
+mpi-static:
+	mpic++ -std=c++11 -o mpi-static mpi-static.cpp kempe.cpp readfile.cpp

@@ -41,10 +41,9 @@ int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_
         }
     }
 
-    //if(seed.size() == 1) {
-        
-        //std::cout << "Seed: " << seed.size() << std::endl;
-        /*
+    /*
+    if(seed.size() == 1) {
+        std::cout << "Seed:" << std::endl;
         for(auto it = seed.begin(); it != seed.end(); ++it) {
             std::cout << *it << std::endl;
         } 
@@ -52,9 +51,9 @@ int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_
         for(auto it : infected) {
             std::cout << it << " ";
         }
-        std::cout << std::endl << std::endl;*/
-
-  //}
+        std::cout << std::endl << std::endl;
+    }
+    */
     return infected.size();
 }
 
@@ -73,7 +72,7 @@ float sample(std::vector<std::unordered_map<Node, float> > graph, std::unordered
 /**
  * 
  */
-Node select_maximize_node(std::vector<std::unordered_map<Node, float> > graph, std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node min_node, Node max_node) {
+std::pair<Node, float> select_maximize_node(std::vector<std::unordered_map<Node, float> > graph, std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node min_node, Node max_node) {
 
     int sample_times = 1; // To be determined
 
@@ -102,7 +101,7 @@ Node select_maximize_node(std::vector<std::unordered_map<Node, float> > graph, s
         
     }
     // Return the node with maximized influence
-    return maximized_node;
+    return {maximized_node, max_influence};
 }
 
 std::unordered_set<Node> greedy_maximize_influence(
@@ -113,9 +112,8 @@ std::unordered_set<Node> greedy_maximize_influence(
     Node min_node = 1;
     std::unordered_set<Node> seed;
     while(seed.size() < size) {
-        std::cout << "Seed size: " <<   seed.size() << std::endl;
-        Node node_with_max_influence = select_maximize_node(graph, seed, empty_nodes, min_node, max_node);
-        seed.insert(node_with_max_influence);
+        std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, seed, empty_nodes, min_node, max_node);
+        seed.insert(node_with_max_influence.first);
     }
     return seed;
 }
