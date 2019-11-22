@@ -6,6 +6,10 @@
 #include <mpi.h>
 #include <string>
 
+#include <unistd.h>
+
+
+
 int main(int argc, char** argv) {
 
     int thread_num, rank;
@@ -13,6 +17,7 @@ int main(int argc, char** argv) {
     MPI_Status status;
     MPI_Comm_size(MPI_COMM_WORLD,&thread_num);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
 
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
@@ -22,6 +27,72 @@ int main(int argc, char** argv) {
 	// Node node_with_max_influence; 
 	std::unordered_set<Node> seed;
 
+	// Producer
+	if(rank == 0) {
+		int test_number = 0;
+		MPI_Request request[thread_num];
+		for(int i = 1; i < thread_num; ++i) {
+			
+			MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &request[i]);
+			
+			test_number++;
+		}
+
+		while(test_number < 100) {
+			int i;
+			int flag = 0;
+			for(i = 1; i < thread_num; ++i) {
+				MPI_Test(&request[i], &flag, nullptr);
+				printf("Test: rank = %d flag = %d\n", i, flag);
+				if(flag) {
+					break;
+				}
+			}
+			if(flag) {
+				MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &request[i]);
+				test_number++;
+			}
+		}
+
+		// No more to send
+		int dummy = -1;
+		for(int i = 1; i < thread_num; ++i) {
+			MPI_Wait(&request[i], nullptr);
+			MPI_Isend(&dummy, 1, MPI_INT, i, 0, MPI_COMM_WORLD, nullptr);
+		}
+	}
+
+	// Consumer
+	else {
+		MPI_Status status;
+		
+		while(true) {
+			// Probe size of next message
+			MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			if(status.MPI_TAG == 0) {
+				// if master has no more to send
+				break;
+			}
+			int current_seed_size;
+			MPI_Get_count(&status, MPI_INT, &current_seed_size);
+
+			int seed_buf[current_seed_size];
+			MPI_Recv(seed_buf, current_seed_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, nullptr);
+
+			printf("rank = %d receiving\n", rank);
+			for(int i = 0; i < current_seed_size; ++i) {
+				printf("%d ", seed_buf[i]);
+			}
+			printf("\n");
+			sleep(3);
+		}
+		printf("rank = %d exits\n", rank);
+	}
+
+
+
+
+	/*
 	while(seed.size() < max_seed_size){
 
 		int curr_seed_size = 0; 
@@ -124,7 +195,7 @@ int main(int argc, char** argv) {
 			printf("%i ", i);
 		}
 		printf("\n");
-	}
+	}*/
 	MPI_Finalize();
 	return 0;
 }
