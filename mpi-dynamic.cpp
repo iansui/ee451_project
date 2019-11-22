@@ -17,8 +17,8 @@ int main(int argc, char** argv) {
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
-    int max_seed_size = 4;
-    int sample_times = 1;
+    int max_seed_size = 10;
+    int sample_times = 100;
 	// Node node_with_max_influence; 
 	std::unordered_set<Node> seed;
 
