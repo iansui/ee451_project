@@ -30,61 +30,94 @@ int main(int argc, char** argv) {
 	// Producer
 	if(rank == 0) {
 		int test_number = 0;
-		MPI_Request request[thread_num];
+		MPI_Request send_request[thread_num];
+		MPI_Request receive_request[thread_num];
 		for(int i = 1; i < thread_num; ++i) {
 			
-			MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &request[i]);
+			MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &send_request[i]);
 			
 			test_number++;
 		}
 
-		while(test_number < 100) {
-			int i;
+		while(test_number < 10) {
+			int i = 0;
 			int flag = 0;
+
+			int tmp;
 			for(i = 1; i < thread_num; ++i) {
-				MPI_Test(&request[i], &flag, nullptr);
-				printf("Test: rank = %d flag = %d\n", i, flag);
+				MPI_Irecv(&tmp, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
+			}
+
+			while(flag == 0 && test_number < 10) {
+				/*
+				for(i = 1; i < thread_num; ++i) {
+					MPI_Test(&receive_request[i], &flag, MPI_STATUS_IGNORE);
+					//printf("Test: rank = %d flag = %d\n", i, flag);
+					if(flag) {
+						break;
+					}
+				}*/
+
+				while(flag == 0)
+					MPI_Testany(thread_num - 1, receive_request + 1, &i, &flag, MPI_STATUS_IGNORE);
+
 				if(flag) {
+					MPI_Isend(&test_number, 1, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i]);
+					printf("Send: rank = %d number = %d\n", rank, test_number);
+					test_number++;
 					break;
 				}
-			}
-			if(flag) {
-				MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &request[i]);
-				test_number++;
 			}
 		}
 
 		// No more to send
 		int dummy = -1;
 		for(int i = 1; i < thread_num; ++i) {
-			MPI_Wait(&request[i], nullptr);
-			MPI_Isend(&dummy, 1, MPI_INT, i, 0, MPI_COMM_WORLD, nullptr);
+			printf("Wait: rank = %d waiting for rank = %d\n", rank, i);
+			MPI_Wait(&receive_request[i], MPI_STATUS_IGNORE); // Possible bug
+			MPI_Send(&dummy, 1, MPI_INT, i, 0, MPI_COMM_WORLD);// &send_request[i]);
+			printf("Exit: rank = %d sent to rank = %d\n", rank, i);
 		}
+		printf("Exit: rank = %d exits\n", rank);
 	}
 
 	// Consumer
 	else {
 		MPI_Status status;
-		
+		int okay_signal = 0;
 		while(true) {
 			// Probe size of next message
 			MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			if(status.MPI_TAG == 0) {
-				// if master has no more to send
-				break;
-			}
+
 			int current_seed_size;
 			MPI_Get_count(&status, MPI_INT, &current_seed_size);
 
 			int seed_buf[current_seed_size];
-			MPI_Recv(seed_buf, current_seed_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, nullptr);
+			MPI_Recv(seed_buf, current_seed_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
+			if(status.MPI_TAG == 0) {
+				// if master has no more to send
+				
+				break;
+			}
 			printf("rank = %d receiving\n", rank);
 			for(int i = 0; i < current_seed_size; ++i) {
 				printf("%d ", seed_buf[i]);
 			}
 			printf("\n");
 			sleep(3);
+			/*
+			int sum = 0;
+			for(int j = 0; j < 1000; ++j) {
+				if(j % 2 == 0) {
+					sum += j;
+				}
+				else {
+					sum += 2 * j + 1;
+				}
+			}*/
+
+			MPI_Send(&okay_signal, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 		}
 		printf("rank = %d exits\n", rank);
 	}
