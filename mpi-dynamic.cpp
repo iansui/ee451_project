@@ -38,31 +38,27 @@ int main(int argc, char** argv) {
 			
 			test_number++;
 		}
+		int tmp;
+		for(int i = 1; i < thread_num; ++i) {
+			MPI_Irecv(&tmp, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
+		}
+
 
 		while(test_number < 10) {
 			int i = 0;
 			int flag = 0;
 
-			int tmp;
-			for(i = 1; i < thread_num; ++i) {
-				MPI_Irecv(&tmp, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
-			}
 
 			while(flag == 0 && test_number < 10) {
-				/*
-				for(i = 1; i < thread_num; ++i) {
-					MPI_Test(&receive_request[i], &flag, MPI_STATUS_IGNORE);
-					//printf("Test: rank = %d flag = %d\n", i, flag);
-					if(flag) {
-						break;
-					}
-				}*/
 
 				while(flag == 0)
+					// Only test 1, 2, ..., max_rank; not test 0 itself
 					MPI_Testany(thread_num - 1, receive_request + 1, &i, &flag, MPI_STATUS_IGNORE);
 
 				if(flag) {
+					// index is 1 off the start
 					MPI_Isend(&test_number, 1, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i]);
+					MPI_Irecv(&tmp, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
 					printf("Send: rank = %d number = %d\n", rank, test_number);
 					test_number++;
 					break;
@@ -118,6 +114,7 @@ int main(int argc, char** argv) {
 			}*/
 
 			MPI_Send(&okay_signal, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+			printf("rank = %d sent okay\n", rank);
 		}
 		printf("rank = %d exits\n", rank);
 	}
