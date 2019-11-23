@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 				if(flag) {
 					// index is 1 off the start
 					MPI_Isend(&test_number, 1, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i]);
-					MPI_Irecv(&tmp, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
+					MPI_Irecv(&tmp, 1, MPI_INT, i + 1, 0, MPI_COMM_WORLD, &receive_request[i]);
 					printf("Send: rank = %d number = %d\n", rank, test_number);
 					test_number++;
 					break;
