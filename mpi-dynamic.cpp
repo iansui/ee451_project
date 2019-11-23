@@ -44,26 +44,27 @@ int main(int argc, char** argv) {
 		}
 
 
-		while(test_number < 10) {
+		while(test_number < 20) {
 			int i = 0;
 			int flag = 0;
 
 
-			while(flag == 0 && test_number < 10) {
+			//while(flag == 0 && test_number < 10) {
 
-				while(flag == 0)
+				//while(flag == 0)
 					// Only test 1, 2, ..., max_rank; not test 0 itself
-					MPI_Testany(thread_num - 1, receive_request + 1, &i, &flag, MPI_STATUS_IGNORE);
+					//MPI_Testany(thread_num - 1, receive_request + 1, &i, &flag, MPI_STATUS_IGNORE);
+				MPI_Waitany(thread_num - 1, receive_request + 1, &i, MPI_STATUS_IGNORE);
+				//if(flag) {
 
-				if(flag) {
 					// index is 1 off the start
-					MPI_Isend(&test_number, 1, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i]);
-					MPI_Irecv(&tmp, 1, MPI_INT, i + 1, 0, MPI_COMM_WORLD, &receive_request[i]);
+					MPI_Isend(&test_number, 1, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i + 1]);
+					MPI_Irecv(&tmp, 1, MPI_INT, i + 1, 0, MPI_COMM_WORLD, &receive_request[i + 1]);
 					printf("Send: rank = %d number = %d\n", rank, test_number);
 					test_number++;
-					break;
-				}
-			}
+					//break;
+				//}
+			//}
 		}
 
 		// No more to send
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
 	else {
 		MPI_Status status;
 		int okay_signal = 0;
+		srand(rank);
 		while(true) {
 			// Probe size of next message
 			MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -101,7 +103,10 @@ int main(int argc, char** argv) {
 				printf("%d ", seed_buf[i]);
 			}
 			printf("\n");
-			sleep(3);
+	
+			int sleeptime = rand() % 10;
+			printf("Sleep: rank = %d for %d seconds\n", rank, sleeptime);
+			sleep(sleeptime);
 			/*
 			int sum = 0;
 			for(int j = 0; j < 1000; ++j) {
