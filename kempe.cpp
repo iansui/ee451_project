@@ -6,9 +6,9 @@
 #include <iostream>
 
 // Return a random number in [0, 1]
-int getRamdomNumber() {
+float getRamdomNumber() {
     srand(time(NULL));
-    return rand();
+    return (float)rand() / RAND_MAX;
 }
 
 int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_set<Node>& seed) {
