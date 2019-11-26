@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
-    int max_seed_size = 1;
-    int sample_times = 1;
+    int max_seed_size = 5;
+    int sample_times = 10;
 	// Node node_with_max_influence; 
 	std::unordered_set<Node> seed;
 
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
 					break;
 				}
 				printf("rank = %d calculate %d to %d ", rank, node_block[0], node_block[1]);
-				std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, curr_seed, empty_nodes, node_block[0], node_block[1]);
+				std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, curr_seed, empty_nodes, node_block[0], node_block[1], sample_times);
 				printf("rank = %i max influence node = %i, max influence = %f\n", rank, node_with_max_influence.first, node_with_max_influence.second);
 
 				// put the node number with max influence and its value into an array

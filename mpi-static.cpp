@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
 		for (int j = 0; j < curr_seed_size; ++j){
 			curr_seed.insert(array[j]);
 		}
-		std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, curr_seed, empty_nodes, block_start, block_end);
+		std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, curr_seed, empty_nodes, block_start, block_end, sample_times);
 		printf("rank = %i max influence node = %i, max influence = %f\n", rank, node_with_max_influence.first, node_with_max_influence.second);
 
 
