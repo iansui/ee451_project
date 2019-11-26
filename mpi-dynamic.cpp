@@ -48,24 +48,24 @@ int main(int argc, char** argv) {
 				MPI_Send(seed_array, seed.size(), MPI_INT, i, 1, MPI_COMM_WORLD);//?????blocking or non-blocking
 			}
 			// array store the starting and ending position of the block to be calculated
-			int node_block[2];
+			int node_block[thread_num][2];
 			int block_size = 500;
-			int current_node = 1;
+			int current_node = 1;//position of the next node to be send
 			int curr_max_node = -1;
 			float curr_max_value = -1;
 			// send nodes to slaves for calculation
 			for(int i = 1; i < thread_num; ++i) {
 				// calculate starting and ending position
-				node_block[0] = current_node;
-				node_block[1] = current_node + block_size - 1;
+				node_block[i][0] = current_node;
+				node_block[i][1] = current_node + block_size - 1;
 				current_node = current_node + block_size;
 				//MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &send_request[i]);
-				MPI_Isend(node_block, 2, MPI_INT, i, 1, MPI_COMM_WORLD, &send_request[i]);				
+				MPI_Isend(node_block[i], 2, MPI_INT, i, 1, MPI_COMM_WORLD, &send_request[i]);				
 				//test_number++;
 			}
-			float node_and_value[2];
+			float node_and_value[thread_num][2];
 			for(int i = 1; i < thread_num; ++i) {
-				MPI_Irecv(node_and_value, 2, MPI_FLOAT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
+				MPI_Irecv(node_and_value[i], 2, MPI_FLOAT, i, 0, MPI_COMM_WORLD, &receive_request[i]);
 			}
 
 
@@ -73,21 +73,21 @@ int main(int argc, char** argv) {
 				int i = 0;
 				MPI_Waitany(thread_num - 1, receive_request + 1, &i, MPI_STATUS_IGNORE);
 
-				node_block[0] = current_node;
-				node_block[1] = std::min(current_node + block_size - 1, test_number);
+				node_block[i+1][0] = current_node;
+				node_block[i+1][1] = std::min(current_node + block_size - 1, test_number);
 				current_node = current_node + block_size;
 
-				Node node_result = (int)node_and_value[0];
-				float value_result = node_and_value[1];
+				Node node_result = (int)node_and_value[i+1][0];
+				float value_result = node_and_value[i+1][1];
 				printf("master receive: %d\n",node_result);
 				if(value_result > curr_max_value){
 					curr_max_value = value_result;
 					curr_max_node = node_result;
 				}
 				// index is 1 off the start
-				MPI_Isend(node_block, 2, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i + 1]);
-				MPI_Irecv(node_and_value, 2, MPI_FLOAT, i + 1, 0, MPI_COMM_WORLD, &receive_request[i + 1]);
-				printf("Send: rank = %d number = %d to %d\n", rank, node_block[0], node_block[1]);
+				MPI_Isend(node_block[i+1], 2, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i + 1]);
+				MPI_Irecv(node_and_value[i+1], 2, MPI_FLOAT, i + 1, 0, MPI_COMM_WORLD, &receive_request[i + 1]);
+				printf("Send: rank = %d number = %d to %d\n", rank, node_block[i+1][0], node_block[i+1][1]);
 				//test_number++;
 				
 			}
@@ -113,8 +113,8 @@ int main(int argc, char** argv) {
 				//printf("Wait: rank = %d waiting for rank = %d\n", rank, i);
 				MPI_Wait(&receive_request[i], MPI_STATUS_IGNORE); // Possible bug
 
-				Node node_result2 = (int)node_and_value[0];
-				float value_result2 = node_and_value[1];
+				Node node_result2 = (int)node_and_value[i][0];
+				float value_result2 = node_and_value[i][1];
 				printf("master receive: %d %f\n",node_result2, value_result2);
 				if(value_result2 > curr_max_value){
 					curr_max_value = value_result2;
