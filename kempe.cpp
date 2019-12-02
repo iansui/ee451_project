@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <queue>
 #include <iostream>
+using std::cout;
+using std::endl;
 
 // Return a random number in [0, 1]
 float getRandomNumber() {
@@ -101,6 +103,7 @@ std::pair<Node, float> select_maximize_node(std::vector<std::unordered_map<Node,
         
     }
     // Return the node with maximized influence
+    std::cout << "global max node = " << maximized_node << ", max influence = " << max_influence << endl;
     return {maximized_node, max_influence};
 }
 

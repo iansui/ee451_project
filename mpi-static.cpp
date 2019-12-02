@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <string>
+#include <time.h>
 
 int main(int argc, char** argv) {
 
@@ -17,10 +18,18 @@ int main(int argc, char** argv) {
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
-    int max_seed_size = 4;
-    int sample_times = 1;
+    int max_seed_size = 10;
+    int sample_times = 10;
 	// Node node_with_max_influence; 
 	std::unordered_set<Node> seed;
+
+struct timespec start, stop; 
+    double time;
+    
+    if(rank == 0){
+    // get start time 
+    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
+    }
 
 	while(seed.size() < max_seed_size){
 
@@ -32,7 +41,7 @@ int main(int argc, char** argv) {
 		// broadcast seed size to each slave thread
 		MPI_Bcast(&curr_seed_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-		printf("rank = %i, seed size = %i\n", rank, curr_seed_size);
+		//printf("rank = %i, seed size = %i\n", rank, curr_seed_size);
 		
 		// broacast seed set to each slave thread
 		int array[curr_seed_size];
@@ -46,9 +55,9 @@ int main(int argc, char** argv) {
 		}
 		MPI_Bcast(array, curr_seed_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-		for (int i = 0; i < curr_seed_size; ++i){
-			printf("rank = %i, seed[%i] = %i\n", rank, i, array[i]);
-		}
+		//for (int i = 0; i < curr_seed_size; ++i){
+		//	printf("rank = %i, seed[%i] = %i\n", rank, i, array[i]);
+		//}
 
 		// calculate block size for each thread
 		int block_size = 0;
@@ -68,7 +77,7 @@ int main(int argc, char** argv) {
 		int block_end = 0;
 		MPI_Scatter(block_start_index, 1, MPI_INT, &block_start, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Scatter(block_end_index, 1, MPI_INT, &block_end, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		printf("rank = %i, block start = %i, block end = %i\n", rank, block_start, block_end);
+		//printf("rank = %i, block start = %i, block end = %i\n", rank, block_start, block_end);
 		
 		
 		// convert seed array to seed unordered set
@@ -77,7 +86,7 @@ int main(int argc, char** argv) {
 			curr_seed.insert(array[j]);
 		}
 		std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, curr_seed, empty_nodes, block_start, block_end, sample_times);
-		printf("rank = %i max influence node = %i, max influence = %f\n", rank, node_with_max_influence.first, node_with_max_influence.second);
+		//printf("rank = %i max influence node = %i, max influence = %f\n", rank, node_with_max_influence.first, node_with_max_influence.second);
 
 
 
@@ -88,7 +97,7 @@ int main(int argc, char** argv) {
 		MPI_Gather(&(node_with_max_influence.second), 1, MPI_FLOAT, max_inf_array, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
 		if (rank == 0){
-			printf("max node in each block:");
+			//printf("max node in each block:");
 			for(int i = 0; i < thread_num; ++i){
 				printf("%i  %f  ", max_node_array[i], max_inf_array[i]);
 			}
@@ -118,12 +127,18 @@ int main(int argc, char** argv) {
 
 
 	if (rank == 0){
+        // get end time
+    if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}		
+		time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+        
 		printf("done!\n");
 		printf("seed: ");
 		for(auto i : seed){
 			printf("%i ", i);
 		}
 		printf("\n");
+         // print execution time
+    printf("Execution time = %f sec\n", time);
 	}
 	MPI_Finalize();
 	return 0;
