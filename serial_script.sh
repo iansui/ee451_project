@@ -3,10 +3,10 @@
 #source /usr/usc/openmpi/default/setup.sh
 #make clean
 #make serial
-echo "serial 1st run"
-./serial > serial1.txt
-#echo "serial 2nd run"
-#./serial > serial2.txt
+#echo "serial 1st run"
+#./serial > serial1.txt
+echo "serial 2nd run"
+./serial > serial2.txt
 #echo "serial 3rd run"
 #./serial > serial3.txt
 #echo "serial 4th run"
