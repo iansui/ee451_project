@@ -1,0 +1,2 @@
+global max node = 4543, max influence = 3981.57
+global max node = 4222, max influence = 3981.61

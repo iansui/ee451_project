@@ -27,8 +27,8 @@ struct timespec start, stop;
     double time;
     
     if(rank == 0){
-    // get start time 
-    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
+	    // get start time 
+    	if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
     }
 
 	while(seed.size() < max_seed_size){
@@ -93,11 +93,13 @@ struct timespec start, stop;
 		int max_node_array[thread_num];
 		float max_inf_array[thread_num];
 		// gather max back to master
+		printf("rank = %i, gather max starts\n", rank);
 		MPI_Gather(&(node_with_max_influence.first), 1, MPI_INT, max_node_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Gather(&(node_with_max_influence.second), 1, MPI_FLOAT, max_inf_array, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
+		printf("rank = %i, gather max end\n", rank);
 
 		if (rank == 0){
-			//printf("max node in each block:");
+			printf("max node in each block:");
 			for(int i = 0; i < thread_num; ++i){
 				printf("%i  %f  ", max_node_array[i], max_inf_array[i]);
 			}
