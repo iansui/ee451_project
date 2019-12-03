@@ -1,0 +1,14 @@
+---------- Begin SLURM Prolog ----------
+Job ID:        5184791
+Username:      ysui
+Accountname:   lc_vkp2
+Name:          serial.sl
+Partition:     main
+Nodelist:      hpc3686
+TasksPerNode:  1
+CPUsPerTask:   Default[1]
+TMPDIR:        /tmp/5184791.main
+SCRATCHDIR:    /staging/scratch/5184791
+Cluster:       uschpc
+HSDA Account:  false
+---------- 2019-12-03 11:00:01 ---------

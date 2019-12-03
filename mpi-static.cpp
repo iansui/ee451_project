@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     int max_node = NODE_NUM;
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
     int max_seed_size = 10;
-    int sample_times = 10;
+    int sample_times = 100;
 	// Node node_with_max_influence; 
 	std::unordered_set<Node> seed;
 
