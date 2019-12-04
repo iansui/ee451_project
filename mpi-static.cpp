@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
 
 		int curr_seed_size = 0; 
 		if(rank == 0){
+        	printf("==== Round %lu starts ====\n", seed.size());
 			curr_seed_size = seed.size();
 		}
 
@@ -119,6 +120,7 @@ int main(int argc, char** argv) {
 			}
 			printf("global max node = %i with influence = %f\n", curr_max, curr_max_inf);
 
+        	printf("==== Round %lu ends ====\n", seed.size());
 			// add new global max node into seed
 			seed.insert(curr_max);
 		}

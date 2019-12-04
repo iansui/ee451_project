@@ -116,8 +116,11 @@ std::unordered_set<Node> greedy_maximize_influence(
     Node min_node = 1;
     std::unordered_set<Node> seed;
     while(seed.size() < size) {
+        printf("==== Round %lu starts ====\n", seed.size());
         std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, seed, empty_nodes, min_node, max_node, sample_times);
+        printf("==== Round %lu ends ====\n", seed.size());
         seed.insert(node_with_max_influence.first);
+
     }
     return seed;
 }

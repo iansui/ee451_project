@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 		while(seed.size()<max_seed_size){
 			int test_number = NODE_NUM;// number of nodes to be distributed
 			
-
+        	printf("==== Round %lu starts ====\n", seed.size());
 			// convert seed from set to array
 			int curr_seed_size = seed.size();
 			int seed_array[curr_seed_size];
@@ -137,6 +137,8 @@ int main(int argc, char** argv) {
 			}
 
 			printf("global max node = %i with influence = %f\n", curr_max_node, curr_max_value);
+
+			printf("==== Round %lu ends ====\n", seed.size());
 			seed.insert(curr_max_node);
 
 			//printf("Exit: rank = %d exits\n", rank);
