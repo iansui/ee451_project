@@ -8,12 +8,16 @@
 using std::cout;
 using std::endl;
 
-int main() {
+int main(int argc, char** argv) {
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
-    int sample_times = 100;
+    if(argc != 3) {
+      perror("Wrong parameter count. Expecting two parameters: maximum seed size and sample times.\n");
+      exit(1);
+    }
+    int sample_times = atoi(argv[2]);
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
-    int seed_size = 10;
+    int seed_size = atoi(argv[1]);
     
     // time
     struct timespec start, stop; 

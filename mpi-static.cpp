@@ -18,12 +18,15 @@ int main(int argc, char** argv) {
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
-    int max_seed_size = 10;
-    int sample_times = 100;
-	// Node node_with_max_influence; 
+	if(argc != 3) {
+		perror("Wrong parameter count. Expecting two parameters: Maximum seed size to be selected and sample times for each set\n");
+		exit(1);
+	}
+    int max_seed_size = atoi(argv[1]);
+    int sample_times = atoi(argv[2]);
 	std::unordered_set<Node> seed;
 
-struct timespec start, stop; 
+	struct timespec start, stop; 
     double time;
     
     if(rank == 0){
@@ -130,7 +133,7 @@ struct timespec start, stop;
 
 	if (rank == 0){
         // get end time
-    if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}		
+    	if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}		
 		time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
         
 		printf("done!\n");
@@ -140,7 +143,7 @@ struct timespec start, stop;
 		}
 		printf("\n");
          // print execution time
-    printf("Execution time = %f sec\n", time);
+    	printf("Execution time = %f sec\n", time);
 	}
 	MPI_Finalize();
 	return 0;

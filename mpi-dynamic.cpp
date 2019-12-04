@@ -22,13 +22,22 @@ int main(int argc, char** argv) {
     std::vector<std::unordered_map<Node, float> >& graph = readfile();
     int max_node = NODE_NUM;
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
-    int max_seed_size = 5;
-    int sample_times = 10;
+	if(argc != 4) {
+		perror("Wrong parameter count. Expecting three parameters: Maximum seed size to be selected, sample times for each set, and block size\n");
+		exit(1);
+	}
+    int max_seed_size = atoi(argv[1]);
+    int sample_times = atoi(argv[2]);
 	// Node node_with_max_influence; 
 	std::unordered_set<Node> seed;
 
 	// Producer
 	if(rank == 0) {
+		struct timespec start, stop; 
+    	double time;
+
+		if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
+		
 		MPI_Request send_request[thread_num];
 		MPI_Request receive_request[thread_num];
 		while(seed.size()<max_seed_size){
@@ -49,7 +58,7 @@ int main(int argc, char** argv) {
 			}
 			// array store the starting and ending position of the block to be calculated
 			int node_block[thread_num][2];
-			int block_size = 500;
+			int block_size = atoi(argv[3]);
 			int current_node = 1;//position of the next node to be send
 			int curr_max_node = -1;
 			float curr_max_value = -1;
@@ -132,6 +141,19 @@ int main(int argc, char** argv) {
 
 			//printf("Exit: rank = %d exits\n", rank);
 		}
+
+		if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}		
+		time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+        
+		printf("done!\n");
+		printf("seed: ");
+		for(auto i : seed){
+			printf("%i ", i);
+		}
+		printf("\n");
+         // print execution time
+    	printf("Execution time = %f sec\n", time);
+
 		int dummy = -1;
 		for(int i = 1; i < thread_num; ++i) {
 			printf("Wait: rank = %d waiting for rank = %d\n", rank, i);
