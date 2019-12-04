@@ -14,5 +14,5 @@ const std::string FILE_NAME = "dataset/dataset.csv";
 // Test2: testset2.csv
 
 std::vector<std::unordered_map<Node, float> >& readfile();
-
+std::vector<std::unordered_map<Node, float> >& readfile_range(int begin, int end);
 std::unordered_set<Node>& get_empty_nodes();
