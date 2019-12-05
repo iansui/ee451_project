@@ -64,6 +64,7 @@ int main(int argc, char** argv) {
 					while(flag){
 						int sent_num=0;
 				    	int total_sent=0;
+				    	int buffer_pos = 0;
 				    	std::vector<std::unordered_set<int> > send_nodes;
 				    	for(int i=0;i<thread_num;i++){
 				        	std::unordered_set<int> temp;
@@ -117,6 +118,7 @@ int main(int argc, char** argv) {
 										//printf("rank= %d i=%d value=%d\n", rank, i, arr[i]);
 										it++;
 									}
+									
 									//printf("n: %d\n",n);
 						    		MPI_Isend(arr[n],vec_size,MPI_INT,n,1,MPI_COMM_WORLD,&send_request[n]);
 						    		//MPI_Send(arr,vec_size,MPI_INT,n,1,MPI_COMM_WORLD);
@@ -165,6 +167,7 @@ int main(int argc, char** argv) {
 						else{
 							flag = 0;
 						}
+						MPI_Barrier(MPI_COMM_WORLD);
 						//printf("rank= %d checkpoint 8\n",rank);
 						MPI_Barrier(MPI_COMM_WORLD);
 						for(int i = 0; i < thread_num; ++i) {
@@ -200,7 +203,7 @@ int main(int argc, char** argv) {
     	printf("max node: %d \n", maximized_node);
     }//***** end while
     
-
+	
 	MPI_Finalize();
 	return 0;
 }
