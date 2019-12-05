@@ -34,8 +34,17 @@ int main(int argc, char** argv) {
     std::unordered_set<Node> seed;
 
     int max_seed_size = 1;
-    int sample_times = 1;
+    int sample_times = 10;
     //printf("rank %d: checkpoint 1\n", rank);
+
+	struct timespec start, stop; 
+	double time;
+	if(rank == 0) {
+
+		// get start time 
+		if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
+	}
+
     while(seed.size() < max_seed_size){
 		//printf("Seed size %lu =========\n", seed.size());
     	float max_influence = 0;
@@ -205,7 +214,7 @@ int main(int argc, char** argv) {
 				}//***** end for sample
 				float avg_influence = total_influence / sample_times;
 				
-				printf("seed: %d average influence: %f \n", *seed.begin(), avg_influence);
+				//printf("seed: %d average influence: %f \n", *seed.begin(), avg_influence);
 				if(avg_influence > max_influence) {
 					max_influence = avg_influence;
 	                maximized_node = candidate;
@@ -225,7 +234,12 @@ int main(int argc, char** argv) {
     	printf("max node: %d max influence: %f \n", maximized_node, max_influence);
     }//***** end while
     
-	
+	if(rank == 0) {
+		if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}		
+		time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+		
+		printf("Execution time = %f sec\n", time);
+	}
 	MPI_Finalize();
 	return 0;
 }
