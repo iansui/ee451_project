@@ -10,7 +10,8 @@ using std::endl;
 // Return a random number in [0, 1]
 float getRandomNumber() {
     //srand(time(NULL));
-    return (float)rand() / RAND_MAX;
+    //return (float)rand() / RAND_MAX;
+    return 1;
 }
 
 int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_set<Node>& seed) {

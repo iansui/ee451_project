@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
     std::unordered_set<Node> seed;
 
-    int max_seed_size = 10;
+    int max_seed_size = 1;
     int sample_times = 1;
     //printf("rank %d: checkpoint 1\n", rank);
     while(seed.size() < max_seed_size){
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
 					total_influence += influence;
 				}//***** end for sample
 				float avg_influence = total_influence / sample_times;
-				//printf("average influence: %f \n", avg_influence);
+				if(rank==0) printf("node= %d average influence: %f \n", candidate, avg_influence);
 				if(avg_influence > max_influence) {
 					max_influence = avg_influence;
 	                maximized_node = candidate;
@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 			}//***** end if
     	}//***** end for candidate
     	seed.insert(maximized_node);
-    	printf("max node: %d \n", maximized_node);
+    	printf("max node: %d influence: %f \n", maximized_node, max_influence);
     }//***** end while
     
 	
