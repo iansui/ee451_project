@@ -8,4 +8,4 @@
 
 source /usr/usc/openmpi/default/setup.sh
 
-srun --ntasks=${SLURM_NTASKS} ./graph-partition
+srun --ntasks=${SLURM_NTASKS} --mpi=pmi2 ./graph-partition
