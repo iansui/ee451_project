@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     int sample_times = 1;
     //printf("rank %d: checkpoint 1\n", rank);
     while(seed.size() < max_seed_size){
-		printf("Seed size %lu =========\n", seed.size());
+		//printf("Seed size %lu =========\n", seed.size());
     	float max_influence = 0;
     	int maximized_node = -1;
     	for(Node candidate = 1; candidate <= max_node; candidate++){
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 						        	auto it = send_nodes[n].begin();
 									for (int i = 0; i < vec_size; ++i){
 										arr[n][i] = *it;
-										printf("rank= %d i=%d value=%d\n", rank, i, arr[n][i]);
+										//printf("rank= %d i=%d value=%d\n", rank, i, arr[n][i]);
 										it++;
 									}
 									
@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 									arr[n] = nullptr;
 									int dummy = 1;
 									int NOTHING_TAG = 10;
-									printf("rank %d Dummy!!!!!!!!\n", rank);
+									//printf("rank %d Dummy!!!!!!!!\n", rank);
 									MPI_Isend(&dummy, 1, MPI_INT, n, NOTHING_TAG, MPI_COMM_WORLD, &send_request[n]);
 								}
 				        	}
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 								arr[n] = nullptr;
 							}
 				        }
-						printf("rank %d: ==============\n",rank);
+						//printf("rank %d: ==============\n",rank);
 						MPI_Barrier(MPI_COMM_WORLD);
 						//printf("rank= %d checkpoint 5\n",rank);
 						MPI_Allreduce(&sent_num, &total_sent,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 									MPI_Probe(i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 									int curr_size;
 									MPI_Get_count(&status, MPI_INT, &curr_size);
-									printf("rank= %d curr size=%d tag %d\n",rank, curr_size, status.MPI_TAG);
+									//printf("rank= %d curr size=%d tag %d\n",rank, curr_size, status.MPI_TAG);
 
 									if(status.MPI_TAG != 10 && curr_size > 0) {
 										int recv_node[curr_size];
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 										for(int j=0;j<curr_size;j++){
 											infecting_nodes.push(recv_node[j]);
 											infected.insert(recv_node[j]);
-											printf("rank= %d j: %d receive= %d\n",rank,j, recv_node[j]);
+											//printf("rank= %d j: %d receive= %d\n",rank,j, recv_node[j]);
 										}
 									}
 									else {
@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
 					infected_count = infected.size();
 					
 					for(auto it = infected.begin(); it != infected.end(); ++it) {
-						printf("rank %d, infected: %d\n", rank, *it);
+						//printf("rank %d, infected: %d\n", rank, *it);
 					}
 
 					int influence;
@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
 			}//***** end if
     	}//***** end for candidate
     	seed.insert(maximized_node);
-    	printf("max node: %d \n", maximized_node);
+    	printf("max node: %d max influence: %f \n", maximized_node, max_influence);
     }//***** end while
     
 	
