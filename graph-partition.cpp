@@ -213,8 +213,7 @@ int main(int argc, char** argv) {
 					total_influence += influence;
 				}//***** end for sample
 				float avg_influence = total_influence / sample_times;
-				
-				//printf("seed: %d average influence: %f \n", *seed.begin(), avg_influence);
+				if(rank==0) printf("node= %d average influence: %f \n", candidate, avg_influence);
 				if(avg_influence > max_influence) {
 					max_influence = avg_influence;
 	                maximized_node = candidate;
