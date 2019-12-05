@@ -33,15 +33,16 @@ int main(int argc, char** argv) {
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
     std::unordered_set<Node> seed;
 
-    int max_seed_size = 1;
+    int max_seed_size = 10;
     int sample_times = 1;
-    printf("checkpoint 1\n");
+    //printf("rank %d: checkpoint 1\n", rank);
     while(seed.size() < max_seed_size){
+		printf("Seed size %lu =========\n", seed.size());
     	float max_influence = 0;
     	int maximized_node = -1;
     	for(Node candidate = 1; candidate <= max_node; candidate++){
     		int total_influence = 0;
-    		printf("checkpoint 2\n");
+    		//printf("rank %d: checkpoint 2\n", rank);
     		if(empty_nodes.find(candidate) == empty_nodes.end() && seed.find(candidate) == seed.end()) {	
     			seed.insert(candidate);
     			for(int s = sample_times;s>0;s--){
@@ -99,49 +100,63 @@ int main(int argc, char** argv) {
 					        //printf("checkpoint 4\n");
 
 						}
-						printf("checkpoint 3\n");
-						printf("rank= %d sent_num:%d \n",rank,sent_num);
+						//printf("checkpoint 3\n");
+						//printf("rank= %d sent_num:%d \n",rank,sent_num);
+						int* arr[thread_num];
 						for(int n=0;n<thread_num;n++){
 				        	if(n!=rank){
-				        		printf("rank= %d n: %d\n",rank,n);
+				        		//printf("rank= %d n: %d\n",rank,n);
 				        		int vec_size = send_nodes[n].size();
-				        		if(rank==0) printf("rank= %d size: %d\n",rank,vec_size);
+				        		//if(rank==0) printf("rank= %d size: %d\n",rank,vec_size);
 				        		if(vec_size!=0){
-				        			vec_size /= 4;
-				        			int arr[vec_size];
+				        			//vec_size /= 4;
+				        			arr[n] = (int*)malloc(sizeof(int) * vec_size);
 						        	auto it = send_nodes[n].begin();
 									for (int i = 0; i < vec_size; ++i){
-										arr[i] = *it;
+										arr[n][i] = *it;
 										//printf("rank= %d i=%d value=%d\n", rank, i, arr[i]);
 										it++;
 									}
 									//printf("n: %d\n",n);
-						    		MPI_Isend(arr,vec_size,MPI_INT,n,1,MPI_COMM_WORLD,&send_request[n]);
+						    		MPI_Isend(arr[n],vec_size,MPI_INT,n,1,MPI_COMM_WORLD,&send_request[n]);
 						    		//MPI_Send(arr,vec_size,MPI_INT,n,1,MPI_COMM_WORLD);
 				        		}
+								else {
+									arr[n] = nullptr;
+									int dummy = 1;
+									int NOTHING_TAG = 10;
+									MPI_Isend(&dummy, 1, MPI_INT, n, NOTHING_TAG, MPI_COMM_WORLD, &send_request[n]);
+								}
 				        	}
+							else {
+								arr[n] = nullptr;
+							}
 				        }
-						//printf("rank= %d checkpoint 4\n",rank);
+						//printf("rank %d: ==============\n",rank);
 						MPI_Barrier(MPI_COMM_WORLD);
 						//printf("rank= %d checkpoint 5\n",rank);
 						MPI_Allreduce(&sent_num, &total_sent,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-						printf("rank= %d total_sent:%d \n",rank,total_sent);
+						//printf("rank= %d total_sent:%d \n",rank,total_sent);
 						if(total_sent>0){
 							for(int i=0;i<thread_num;++i){
 								if(i!=rank){
 									MPI_Probe(i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 									int curr_size;
 									MPI_Get_count(&status, MPI_INT, &curr_size);
-									printf("rank= %d curr size=%d\n",rank, curr_size);
-									int recv_node[curr_size];
-									//printf("rank= %d checkpoint 6\n",rank);
-									printf("i: %d\n",i);
-									MPI_Recv(recv_node, curr_size, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
-									printf("rank= %d checkpoint 7\n",rank);
-									for(int j=0;j<curr_size;j++){
-										infecting_nodes.push(recv_node[j]);
-										//printf("rank= %d j=%d\n",rank, j);
-										//printf("rank= %d j: %d receive= %d\n",rank,j, recv_node[j]);
+									//printf("rank= %d curr size=%d\n",rank, curr_size);
+
+									if(status.MPI_TAG != 10 && curr_size > 0) {
+										int recv_node[curr_size];
+										//printf("rank= %d checkpoint 6\n",rank);
+										//printf("i: %d\n",i);
+										MPI_Recv(recv_node, curr_size + 20, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
+										//printf("rank %d status.MPI_ERROR: %d\n", rank, status.MPI_ERROR);
+										//printf("rank= %d checkpoint 7\n",rank);
+										for(int j=0;j<curr_size;j++){
+											infecting_nodes.push(recv_node[j]);
+											
+											//printf("rank= %d j: %d receive= %d\n",rank,j, recv_node[j]);
+										}
 									}
 								}
 							}
@@ -151,6 +166,11 @@ int main(int argc, char** argv) {
 							flag = 0;
 						}
 						//printf("rank= %d checkpoint 8\n",rank);
+						MPI_Barrier(MPI_COMM_WORLD);
+						for(int i = 0; i < thread_num; ++i) {
+							if(arr[i] != nullptr)
+								free(arr[i]);
+						}
 					}
 					//after simulation
 					//calculate total infected number
@@ -161,7 +181,7 @@ int main(int argc, char** argv) {
 					total_influence += influence;
 				}//***** end for sample
 				float avg_influence = total_influence / sample_times;
-				printf("average influence: %f \n", avg_influence);
+				//printf("average influence: %f \n", avg_influence);
 				if(avg_influence > max_influence) {
 					max_influence = avg_influence;
 	                maximized_node = candidate;
