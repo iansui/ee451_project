@@ -32,7 +32,7 @@ MPI Static Mapping Implementation:
     - mpi-static.sl can be modified to run the test with different parameters, or with diffrent resources allocation time, or with different number of computing nodes(workers)
     
     For example:
-    srun --ntasks=${SLURM_NTASKS} ./mpi-static 1 2 > mpi-static-output.txt  
+    srun --ntasks=${SLURM_NTASKS} --mpi=pmi2 ./mpi-static 1 2 > mpi-static-output.txt  
     // this would run it with seed size = 1 and sample times = 2
     
     
@@ -48,20 +48,20 @@ MPI Dynamic Mapping Implementation:
     -mpi-dynamic.sl can be modified to run the test with different parameters, or with diffrent resources allocation time, or with different number of computing nodes(workers)
     
     For example:
-    srun --ntasks=${SLURM_NTASKS} ./mpi-dynamic 1 2 50 > mpi-dynamic-output.txt  
+    srun --ntasks=${SLURM_NTASKS} --mpi=pmi2 ./mpi-dynamic 1 2 50 > mpi-dynamic-output.txt  
     // this would run it with seed size = 1, sample times = 2, and block size = 50
     
     
 MPI Graph Partition Implementation:
     -Run "sbatch graph-partition.sl" to submit the job to be run on HPC using slurm
     
-    -The default seed size and sample times to run are both 10
+    -The default seed size and sample times to run are both 1
     
-    -The output would be stored in mpi-dynamic-output.txt
+    -The output would be stored in graph-partition-output.txt
     
-    -mpi-dynamic.sl can be modified to run the test with different parameters, or with diffrent resources allocation time, or with different number of computing nodes(workers)
+    -graph-partition.scan be modified to run the test with different parameters, or with diffrent resources allocation time, or with different number of computing nodes(workers)
     
     For example:
-    srun --ntasks=${SLURM_NTASKS} ./mpi-dynamic 1 2 50 > mpi-dynamic-output.txt  
-    // this would run it with seed size = 1, sample times = 2, and block size = 50
+    srun --ntasks=${SLURM_NTASKS} --mpi=pmi2 ./graph-partition 1 2 > graph-partition-output.txt 
+    // this would run it with seed size = 1, sample times = 2
     

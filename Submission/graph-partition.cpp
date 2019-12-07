@@ -33,8 +33,13 @@ int main(int argc, char** argv) {
     std::unordered_set<Node>& empty_nodes = get_empty_nodes();
     std::unordered_set<Node> seed;
 
-    int max_seed_size = 1;
-    int sample_times = 10;
+	if(argc != 3) {
+		printf("Wrong parameter counts. Expecting two parameters: maximum seed set size and sample times.");
+		exit(1);
+	}
+
+    int max_seed_size = atoi(argv[1]);
+    int sample_times = atoi(argv[2]);
     //printf("rank %d: checkpoint 1\n", rank);
 
 	struct timespec start, stop; 
@@ -213,7 +218,7 @@ int main(int argc, char** argv) {
 					total_influence += influence;
 				}//***** end for sample
 				float avg_influence = total_influence / sample_times;
-				if(rank==0) printf("node= %d average influence: %f \n", candidate, avg_influence);
+				//if(rank==0) printf("node= %d average influence: %f \n", candidate, avg_influence);
 				if(avg_influence > max_influence) {
 					max_influence = avg_influence;
 	                maximized_node = candidate;
