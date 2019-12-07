@@ -64,13 +64,10 @@ int main(int argc, char** argv) {
 			float curr_max_value = -1;
 			// send nodes to slaves for calculation
 			for(int i = 1; i < thread_num; ++i) {
-				// calculate starting and ending position
 				node_block[i][0] = current_node;
 				node_block[i][1] = current_node + block_size - 1;
 				current_node = current_node + block_size;
-				//MPI_Isend(&test_number, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &send_request[i]);
 				MPI_Isend(node_block[i], 2, MPI_INT, i, 1, MPI_COMM_WORLD, &send_request[i]);				
-				//test_number++;
 			}
 			float node_and_value[thread_num][2];
 			for(int i = 1; i < thread_num; ++i) {
@@ -97,29 +94,12 @@ int main(int argc, char** argv) {
 				MPI_Isend(node_block[i+1], 2, MPI_INT, i + 1, 1, MPI_COMM_WORLD, &send_request[i + 1]);
 				MPI_Irecv(node_and_value[i+1], 2, MPI_FLOAT, i + 1, 0, MPI_COMM_WORLD, &receive_request[i + 1]);
 				printf("Send: rank = %d number = %d to %d\n", rank, node_block[i+1][0], node_block[i+1][1]);
-				//test_number++;
 				
 			}
-			/*
-			int dum;
-			MPI_Waitany(thread_num - 1, receive_request + 1, &dum, MPI_STATUS_IGNORE);
-			Node node_result2 = (int)node_and_value[0];
-			float value_result2 = node_and_value[1];
-			printf("master receive: %d %f\n",node_result2, value_result2);
-			if(value_result2 > curr_max_value){
-				curr_max_value = value_result2;
-				curr_max_node = node_result2;
-			}
-
-			printf("global max node = %i with influence = %f\n", curr_max_node, curr_max_value);
-			*/
-			// add new global max node into seed
-			//seed.insert(curr_max_node);
 
 			// No more to send
 			int dummy = -1;
 			for(int i = 1; i < thread_num; ++i) {
-				//printf("Wait: rank = %d waiting for rank = %d\n", rank, i);
 				MPI_Wait(&receive_request[i], MPI_STATUS_IGNORE); // Possible bug
 
 				Node node_result2 = (int)node_and_value[i][0];
@@ -130,18 +110,13 @@ int main(int argc, char** argv) {
 					curr_max_node = node_result2;
 				}
 
-
-
 				MPI_Send(&dummy, 1, MPI_INT, i, 0, MPI_COMM_WORLD);// &send_request[i]);
-				//printf("Exit: rank = %d sent to rank = %d\n", rank, i);
 			}
 
 			printf("global max node = %i with influence = %f\n", curr_max_node, curr_max_value);
 
 			printf("==== Round %lu ends ====\n", seed.size());
 			seed.insert(curr_max_node);
-
-			//printf("Exit: rank = %d exits\n", rank);
 		}
 
 		if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}		
@@ -212,20 +187,6 @@ int main(int argc, char** argv) {
 
 			}
 			
-
-			// printf("rank = %d receiving\n", rank);
-			// for(int i = 0; i < current_seed_size; ++i) {
-			// 	printf("%d ", seed_buf[i]);
-			// }
-			// printf("\n");
-	
-			// int sleeptime = rand() % 10;
-			// printf("Sleep: rank = %d for %d seconds\n", rank, sleeptime);
-			// sleep(sleeptime);
-
-
-			// MPI_Send(&okay_signal, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-			// printf("rank = %d sent okay\n", rank);
 		}
 		printf("rank = %d exits\n", rank);
 	}

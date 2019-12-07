@@ -44,8 +44,6 @@ int main(int argc, char** argv) {
 
 		// broadcast seed size to each slave thread
 		MPI_Bcast(&curr_seed_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-		//printf("rank = %i, seed size = %i\n", rank, curr_seed_size);
 		
 		// broacast seed set to each slave thread
 		int array[curr_seed_size];
@@ -58,10 +56,6 @@ int main(int argc, char** argv) {
 			}
 		}
 		MPI_Bcast(array, curr_seed_size, MPI_INT, 0, MPI_COMM_WORLD);
-
-		//for (int i = 0; i < curr_seed_size; ++i){
-		//	printf("rank = %i, seed[%i] = %i\n", rank, i, array[i]);
-		//}
 
 		// calculate block size for each thread
 		int block_size = 0;
@@ -90,9 +84,6 @@ int main(int argc, char** argv) {
 			curr_seed.insert(array[j]);
 		}
 		std::pair<Node, float> node_with_max_influence = select_maximize_node(graph, curr_seed, empty_nodes, block_start, block_end, sample_times);
-		//printf("rank = %i max influence node = %i, max influence = %f\n", rank, node_with_max_influence.first, node_with_max_influence.second);
-
-
 
 		int max_node_array[thread_num];
 		float max_inf_array[thread_num];

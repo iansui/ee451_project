@@ -15,19 +15,12 @@ float getRandomNumber() {
 }
 
 int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_set<Node>& seed) {
-
-
-
     std::unordered_set<Node> infected = seed;
-
-
     std::queue<Node> infecting_nodes;
 
     for(auto it = infected.begin(); it != infected.end(); ++it) {
         infecting_nodes.push(*it);
     }
-
-    
 
     while(!infecting_nodes.empty()) {
         Node current_infecting_node = infecting_nodes.front();
@@ -44,19 +37,6 @@ int infect(std::vector<std::unordered_map<Node, float> >& graph, std::unordered_
         }
     }
 
-    /*
-    if(seed.size() == 1) {
-        std::cout << "Seed:" << std::endl;
-        for(auto it = seed.begin(); it != seed.end(); ++it) {
-            std::cout << *it << std::endl;
-        } 
-        std::cout << "Infected:" << std::endl;
-        for(auto it : infected) {
-            std::cout << it << " ";
-        }
-        std::cout << std::endl << std::endl;
-    }
-    */
     return infected.size();
 }
 
@@ -67,17 +47,11 @@ float sample(std::vector<std::unordered_map<Node, float> > graph, std::unordered
         influence += infect(graph, seed);
     }
 
-
     // return the number of active nodes
     return ((float)influence) / times;
 }
 
-/**
- * 
- */
 std::pair<Node, float> select_maximize_node(std::vector<std::unordered_map<Node, float> > graph, std::unordered_set<Node>& seed, std::unordered_set<Node>& empty_nodes, Node min_node, Node max_node, int sample_times) {
-
-    //int sample_times = 1; // To be determined
 
     float max_influence = 0;
     Node maximized_node = -1;

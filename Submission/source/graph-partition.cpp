@@ -40,44 +40,40 @@ int main(int argc, char** argv) {
 
     int max_seed_size = atoi(argv[1]);
     int sample_times = atoi(argv[2]);
-    //printf("rank %d: checkpoint 1\n", rank);
 
 	struct timespec start, stop; 
 	double time;
 	if(rank == 0) {
-
 		// get start time 
 		if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
 	}
 
+	// while loop until required number of seeds are selected
     while(seed.size() < max_seed_size){
-		//printf("Seed size %lu =========\n", seed.size());
     	float max_influence = 0;
     	int maximized_node = -1;
+    	// for loop for starting simulation from all nodes
     	for(Node candidate = 1; candidate <= max_node; candidate++){
     		int total_influence = 0;
-    		//printf("rank %d: checkpoint 2\n", rank);
+    		// check the node is not an empty node(not in the graph but occupies a node number)
     		if(empty_nodes.find(candidate) == empty_nodes.end() && seed.find(candidate) == seed.end()) {	
     			seed.insert(candidate);
     			for(int s = sample_times;s>0;s--){
 		    		int infected_count = 0;
 
 				    MPI_Request send_request[thread_num];
-					
-					std::unordered_set<Node> infected;
-
-					
-					
+					std::unordered_set<Node> infected;					
+					// a queue to store all the nodes to begin the simulation with					
 					std::queue<Node> infecting_nodes;
+					// a set to store all the nodes it visited and already sent to other process
 					std::unordered_set<Node> already_sent;
+					// push seed into the queue
 					for(auto& i : seed){
 						if(i>=begin && i<=end){
-							
 							infecting_nodes.push(i);
 							infected.insert(i);
 						}
 					}
-
 
 					int flag = 1;
 					while(flag){
@@ -91,25 +87,22 @@ int main(int argc, char** argv) {
 				        }
 						while(!infecting_nodes.empty()){
 							Node current_infecting_node = infecting_nodes.front();
-							//printf("rank %d current node: %d\n", rank, current_infecting_node);
+							// take a node from queue to start influencing other nodes
 					        infecting_nodes.pop();
+					        // get all nodes connected with the current node
 					        std::unordered_map<Node, float>& edges = graph[current_infecting_node-begin+1];
-					        //for(int i=0;i<thread_num;i++){
-					        //	send_nodes[i].clear();
-					        //}
 
 					        for(auto it = edges.begin(); it != edges.end(); ++it) {
-					        	//if target is in one thread's own node range
+					        	//if target to be influenced is in one thread's own node range
 					        	if(it->first >= begin && it->first <= end){
-					        		//printf("rank=%d it_first: %d\n", rank, it->first);
 					        		if(infected.find(it->first) == infected.end() && getRandomNumber() >= it->second) {
 						                infected.insert(it->first);
 						                infecting_nodes.push(it->first);
 						            }
 					        	}
+					        	//if target belongs to other thread's range, push into the set
 					            else if(already_sent.find(it->first) == already_sent.end()){
 					            	int t = (it->first - 1)/block_size;
-					            	//printf("t: %d \n", t);
 					        		if(it->first>block_size*thread_num) t = thread_num-1;
 					            	send_nodes[t].insert(it->first);
 					            	already_sent.insert(it->first);
@@ -117,36 +110,28 @@ int main(int argc, char** argv) {
 					            }
 					        }
 					        
-					        //printf("checkpoint 4\n");
 
 						}
-						//printf("checkpoint 3\n");
-						//printf("rank= %d sent_num:%d \n",rank,sent_num);
 						int* arr[thread_num];
 						for(int n=0;n<thread_num;n++){
 				        	if(n!=rank){
-				        		//printf("rank= %d n: %d\n",rank,n);
 				        		int vec_size = send_nodes[n].size();
-				        		//if(rank==0) {printf("rank= %d size: %d\n",rank,vec_size);}
 				        		if(vec_size!=0){
-				        			//vec_size /= 4;
 				        			arr[n] = (int*)malloc(sizeof(int) * vec_size);
+				        			// change the set to an array to be send to other process
 						        	auto it = send_nodes[n].begin();
 									for (int i = 0; i < vec_size; ++i){
 										arr[n][i] = *it;
-										//printf("rank= %d i=%d value=%d\n", rank, i, arr[n][i]);
 										it++;
 									}
-									
-									//printf("n: %d\n",n);
+									// send the set of nodes to other processes
 						    		MPI_Isend(arr[n],vec_size,MPI_INT,n,1,MPI_COMM_WORLD,&send_request[n]);
-						    		//MPI_Send(arr,vec_size,MPI_INT,n,1,MPI_COMM_WORLD);
 				        		}
 								else {
 									arr[n] = nullptr;
 									int dummy = 1;
 									int NOTHING_TAG = 10;
-									//printf("rank %d Dummy!!!!!!!!\n", rank);
+									// if no nodes to be sent, send dummy message
 									MPI_Isend(&dummy, 1, MPI_INT, n, NOTHING_TAG, MPI_COMM_WORLD, &send_request[n]);
 								}
 				        	}
@@ -154,30 +139,23 @@ int main(int argc, char** argv) {
 								arr[n] = nullptr;
 							}
 				        }
-						//printf("rank %d: ==============\n",rank);
 						MPI_Barrier(MPI_COMM_WORLD);
-						//printf("rank= %d checkpoint 5\n",rank);
+						// examine the total number of communication happened in this round
 						MPI_Allreduce(&sent_num, &total_sent,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-						//printf("rank= %d total_sent:%d \n",rank,total_sent);
+						// if there are still communication, all threads try to receive
 						if(total_sent>0){
 							for(int i=0;i<thread_num;++i){
 								if(i!=rank){
 									MPI_Probe(i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 									int curr_size;
 									MPI_Get_count(&status, MPI_INT, &curr_size);
-									//printf("rank= %d curr size=%d tag %d\n",rank, curr_size, status.MPI_TAG);
 
 									if(status.MPI_TAG != 10 && curr_size > 0) {
 										int recv_node[curr_size];
-										//printf("rank= %d checkpoint 6\n",rank);
-										//printf("i: %d\n",i);
 										MPI_Recv(recv_node, curr_size, MPI_INT, i, 1, MPI_COMM_WORLD, &status);
-										//printf("rank %d status.MPI_ERROR: %d\n", rank, status.MPI_ERROR);
-										//printf("rank= %d checkpoint 7\n",rank);
 										for(int j=0;j<curr_size;j++){
 											infecting_nodes.push(recv_node[j]);
 											infected.insert(recv_node[j]);
-											//printf("rank= %d j: %d receive= %d\n",rank,j, recv_node[j]);
 										}
 									}
 									else {
@@ -188,6 +166,7 @@ int main(int argc, char** argv) {
 							}
 							
 						}
+						// if no communication happened, receive the dummy message
 						else{
 							flag = 0;
 							int dummy;
@@ -197,40 +176,27 @@ int main(int argc, char** argv) {
 							}
 						}
 						MPI_Barrier(MPI_COMM_WORLD);
-						//printf("rank= %d checkpoint 8\n",rank);
 						
 						for(int i = 0; i < thread_num; ++i) {
 							if(arr[i] != nullptr)
 								free(arr[i]);
 						}
 					}
-					//after simulation
-					//calculate total infected number
+					// after simulation
+					// calculate total infected number
 					infected_count = infected.size();
-					
-					for(auto it = infected.begin(); it != infected.end(); ++it) {
-						//printf("rank %d, infected: %d\n", rank, *it);
-					}
-
+					// add up infected number to get influence
 					int influence;
 					MPI_Allreduce(&infected_count, &influence,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
 					
 					total_influence += influence;
 				}//***** end for sample
 				float avg_influence = total_influence / sample_times;
-				//if(rank==0) printf("node= %d average influence: %f \n", candidate, avg_influence);
 				if(avg_influence > max_influence) {
 					max_influence = avg_influence;
 	                maximized_node = candidate;
 				}
-				/*
-				else if(avg_influence == max_influence){
-					// Arbitrary tie break
-	                if(getRandomNumber() > 0.5) {
-	                    max_influence = avg_influence;
-	                    maximized_node = candidate;
-	                }
-				}*/
+				
 				seed.erase(candidate);
 			}//***** end if
     	}//***** end for candidate
