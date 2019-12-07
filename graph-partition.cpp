@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
 
 	if(argc != 3) {
 		printf("Wrong parameter counts. Expecting two parameters: maximum seed set size and sample times.");
+		exit(1);
 	}
 
     int max_seed_size = atoi(argv[1]);
